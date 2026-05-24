@@ -5,31 +5,32 @@ from component import Component, Pin, PinType, PinValue
 
 CLOCK_HERTZ = 2
 
+
 class Clock(Component):
     class OutPin(Pin):
-        def get_type(self) -> PinType:
-            return PinType.OUTPUT
-
         def __init__(self):
+            super().__init__("CLK")
             self.state = PinValue.ZERO
             self._schedule_flip()
 
-        def _flip(self):
-            if self.state == PinValue.ZERO:
-                self.state = PinValue.ONE
-            else:
-                self.state = PinValue.ZERO
-            print("flip: " + str(self.state))
-            self._schedule_flip()
-
-        def _schedule_flip(self):
-            delta = 1.0 / CLOCK_HERTZ
-            threading.Timer(delta, lambda: self._flip()).start()
+        def get_type(self) -> PinType:
+            return PinType.OUTPUT
 
         def get_value(self) -> PinValue:
             return self.state
 
+        def _flip(self):
+            self.state = PinValue.ONE if self.state == PinValue.ZERO else PinValue.ZERO
+            self._notify()
+            self._schedule_flip()
 
-    out_pin = OutPin()
+        def _schedule_flip(self):
+            timer = threading.Timer(1.0 / CLOCK_HERTZ, self._flip)
+            timer.daemon = True
+            timer.start()
+
+    def __init__(self):
+        self._out_pin = Clock.OutPin()
+
     def get_pins(self) -> List[Pin]:
-        return [self.out_pin]
+        return [self._out_pin]
