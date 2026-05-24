@@ -1,23 +1,23 @@
 from clock import Clock
 from component import Connection
 from probe import Probe
+from program_counter import ProgramCounter
 from schematic import Placement
 from visualizer import SimVisualizer
 
 
 def main():
     clock = Clock()
-    obstacle = Probe("MID")
-    sink = Probe("PHI0")
+    program_counter = ProgramCounter()
 
     placements = [
         Placement(clock, "Clock", x=0, y=0),
-        Placement(obstacle, "Block", x=20, y=0),
-        Placement(sink, "Probe", x=40, y=0),
+        Placement(program_counter, "Program Counter", x=20, y=0)
     ]
-    connection = Connection(clock.get_pins()[0], sink.get_pins()[0], name="CLK0")
 
-    SimVisualizer(placements, [connection]).run()
+    wire1 = Connection(clock.get_pins()[0], program_counter.get_pins()[0])
+
+    SimVisualizer(placements, [wire1]).run()
 
 
 if __name__ == "__main__":

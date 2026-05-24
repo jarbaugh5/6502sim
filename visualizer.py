@@ -1,7 +1,9 @@
 from typing import List
 
+from textual import events
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Static
+from textual.containers import Horizontal
+from textual.widgets import Header, RichLog, Static
 
 from component import Connection
 from schematic import Placement, Schematic
@@ -26,9 +28,17 @@ class SimVisualizer(App):
     Screen {
         layout: vertical;
     }
+    #body {
+        height: 1fr;
+    }
     SchematicCanvas {
+        width: 1fr;
         padding: 1 2;
-        height: auto;
+    }
+    #log {
+        width: 40;
+        border-left: solid $surface-lighten-2;
+        background: $surface;
     }
     """
 
@@ -44,4 +54,16 @@ class SimVisualizer(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield SchematicCanvas(self._schematic)
+        with Horizontal(id="body"):
+            yield SchematicCanvas(self._schematic)
+            yield RichLog(id="log", wrap=True, markup=True, highlight=True)
+
+    def on_mount(self) -> None:
+        self.begin_capture_print(self)
+
+    def on_print(self, event: events.Print) -> None:
+        text = event.text.rstrip()
+        if not text:
+            return
+        log = self.query_one("#log", RichLog)
+        log.write(f"[red]{text}[/red]" if event.stderr else text)
