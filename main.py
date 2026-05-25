@@ -88,7 +88,7 @@ def main():
         ]
     )
 
-    SimVisualizer(placements, wires).run()
+    SimVisualizer(placements, wires, clock=clock).run()
 
 
 if __name__ == "__main__":
