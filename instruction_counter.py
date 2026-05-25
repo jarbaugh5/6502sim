@@ -8,16 +8,16 @@ class InternalCounter:
 
     def inc(self):
         self.value += 1
-        if self.value > 255:
+        if self.value > 15:
             self.value = 0
 
     def get_value(self):
         return self.value
 
-class ProgramCounter(Component):
+class InstructionCounter(Component):
     class InPin(InputPin):
         def __init__(self, counter: InternalCounter):
-            super().__init__("INC")
+            super().__init__("CLK")
             self.counter = counter
 
         def set_value(self, value: PinValue):
@@ -46,11 +46,7 @@ class ProgramCounter(Component):
             self.OutPin(0, self.counter),
             self.OutPin(1, self.counter),
             self.OutPin(2, self.counter),
-            self.OutPin(3, self.counter),
-            self.OutPin(4, self.counter),
-            self.OutPin(5, self.counter),
-            self.OutPin(6, self.counter),
-            self.OutPin(7, self.counter),
+            self.OutPin(3, self.counter)
         ]
 
     def get_pins(self) -> List[Pin]:
