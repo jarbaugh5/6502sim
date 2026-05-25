@@ -16,14 +16,17 @@ class InternalCounter:
 
 class InstructionCounter(Component):
     class InPin(InputPin):
-        def __init__(self, counter: InternalCounter):
+        def __init__(self, counter: InternalCounter, out_pins: List[Pin]):
             super().__init__("CLK")
             self.counter = counter
+            self.out_pins = out_pins
 
         def set_value(self, value: PinValue):
             super().set_value(value)
             if value == PinValue.ONE:
                 self.counter.inc()
+                for pin in self.out_pins:
+                    pin._notify()
 
     class OutPin(Pin):
         def __init__(self, num: int, counter: InternalCounter):
@@ -41,13 +44,8 @@ class InstructionCounter(Component):
     def __init__(self):
         super().__init__()
         self.counter = InternalCounter()
-        self._pins = [
-            self.InPin(self.counter),
-            self.OutPin(0, self.counter),
-            self.OutPin(1, self.counter),
-            self.OutPin(2, self.counter),
-            self.OutPin(3, self.counter)
-        ]
+        self._out_pins = [self.OutPin(i, self.counter) for i in range(4)]
+        self._pins = [self.InPin(self.counter, self._out_pins)] + self._out_pins
 
     def get_pins(self) -> List[Pin]:
         return self._pins

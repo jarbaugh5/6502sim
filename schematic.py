@@ -243,15 +243,15 @@ class Schematic:
 
         # wires (drawn last; combine direction masks across crossing wires)
         combined: Dict[Point, Set[str]] = {}
-        owner: Dict[Point, Connection] = {}
+        any_high: Dict[Point, bool] = {}
         for wire in self._wires:
+            is_high = wire.connection.source.get_value() == PinValue.ONE
             for cell, dirs in wire.cells.items():
                 combined.setdefault(cell, set()).update(dirs)
-                owner.setdefault(cell, wire.connection)
+                any_high[cell] = any_high.get(cell, False) or is_high
         for cell, dirs in combined.items():
             ch = JUNCTION.get(frozenset(dirs), "·")
-            high = owner[cell].source.get_value() == PinValue.ONE
-            put(cell[0], cell[1], ch, HIGH_STYLE if high else LOW_STYLE)
+            put(cell[0], cell[1], ch, HIGH_STYLE if any_high[cell] else LOW_STYLE)
 
         return chars, styles
 
