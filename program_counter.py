@@ -25,6 +25,17 @@ class ProgramCounter(Component):
             if value == PinValue.ONE:
                 self.counter.inc()
 
+    class CoPin(InputPin):
+        def __init__(self, out_pins: List["ProgramCounter.OutPin"]):
+            super().__init__("CO")
+            self.out_pins = out_pins
+
+        def set_value(self, value: PinValue) -> None:
+            super().set_value(value)
+            if value == PinValue.ONE:
+                for pin in self.out_pins:
+                    pin._notify()
+
     class OutPin(Pin):
         def __init__(self, num: int, counter: InternalCounter):
             super().__init__("OUT" + str(num))
@@ -41,17 +52,8 @@ class ProgramCounter(Component):
     def __init__(self):
         super().__init__()
         self.counter = InternalCounter()
-        self._pins = [
-            self.InPin(self.counter),
-            self.OutPin(0, self.counter),
-            self.OutPin(1, self.counter),
-            self.OutPin(2, self.counter),
-            self.OutPin(3, self.counter),
-            self.OutPin(4, self.counter),
-            self.OutPin(5, self.counter),
-            self.OutPin(6, self.counter),
-            self.OutPin(7, self.counter),
-        ]
+        out_pins = [self.OutPin(i, self.counter) for i in range(8)]
+        self._pins = [self.InPin(self.counter), self.CoPin(out_pins)] + out_pins
 
     def get_pins(self) -> List[Pin]:
         return self._pins
